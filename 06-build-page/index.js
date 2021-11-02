@@ -43,15 +43,15 @@ function createFileCss() {
 
     let sorted = files.filter(file => path.extname(file) === '.css');
     //  console.log(sorted);
-    let filtred = [];
-    filtred.push(sorted[1]); //header.css
-    filtred.push(sorted[2]); //main.css
-    filtred.push(sorted[0]); //footer.css
+    //  let filtred = [];
+    //  filtred.push(sorted[1]); //header.css
+    //  filtred.push(sorted[2]); //main.css
+    //  filtred.push(sorted[0]); //footer.css
     //  console.log(filtred);
     const writeStream = fs.createWriteStream(distFile);
 
     //  при изменении массива с filtred на sorted, мы добавим все цсс файлы с папки, но они будут в "разнобой"
-    filtred.forEach(element => {
+    sorted.forEach(element => {
       const readStream = fs.createReadStream(
         path.join(__dirname, 'styles', element),
         'utf-8'
