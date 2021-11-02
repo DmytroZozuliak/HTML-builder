@@ -99,18 +99,9 @@ function createMainIndex() {
         tagToStr.push('.html');
         tagToStr = tagToStr.join('');
 
-        //   console.log(tagToStr); //header.html	 articles.html	 footer.html
-
-        fs.readFile(
-          path.join(__dirname, 'components', tagToStr),
-          'utf-8',
-          (err, data) => {
-            if (err)
-              console.error(
-                'ошибка при чтении файлов .html с папки components'
-              );
-            templateHTML = templateHTML.replace(tag, data);
-
+        fs.access(path.join(__dirname, 'components', tagToStr), err => {
+          if (err) {
+            // console.log('file does not exist...');
             fs.writeFile(
               path.join(__dirname, 'project-dist', 'index.html'),
               templateHTML,
@@ -118,8 +109,29 @@ function createMainIndex() {
                 if (err) console.error('ошибка при записи index.html');
               }
             );
+          } else {
+            // console.log('file exist!');
+            fs.readFile(
+              path.join(__dirname, 'components', tagToStr),
+              'utf-8',
+              (err, data) => {
+                if (err)
+                  console.error(
+                    'ошибка при чтении файлов .html с папки components'
+                  );
+                templateHTML = templateHTML.replace(tag, data);
+
+                fs.writeFile(
+                  path.join(__dirname, 'project-dist', 'index.html'),
+                  templateHTML,
+                  err => {
+                    if (err) console.error('ошибка при записи index.html');
+                  }
+                );
+              }
+            );
           }
-        );
+        });
       });
 
       console.log('Index.html updated');
