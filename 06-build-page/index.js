@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const cssDir = path.join(__dirname, 'styles');
 const distFile = path.join(__dirname, 'project-dist', 'style.css');
+const distIndexFile = path.join(__dirname, 'project-dist', 'index.html');
 const FSP = require('fs').promises;
 const assets = path.join(__dirname, 'assets');
 const copyAssets = path.join(__dirname, 'project-dist', 'assets');
@@ -10,6 +11,7 @@ const copyAssets = path.join(__dirname, 'project-dist', 'assets');
 fs.mkdir(path.join(__dirname, 'project-dist'), { recursive: true }, err => {
   if (err) console.log('Ошибка в создании папки');
   createFileCss();
+  createMainIndex();
 });
 
 // проверяем наличие папки copyAssets
@@ -40,13 +42,15 @@ function createFileCss() {
     if (err) console.log('Ошибка чтения папки (1)');
 
     let sorted = files.filter(file => path.extname(file) === '.css');
-
+    //  console.log(sorted);
     let filtred = [];
     filtred.push(sorted[1]); //header.css
     filtred.push(sorted[2]); //main.css
     filtred.push(sorted[0]); //footer.css
     //  console.log(filtred);
     const writeStream = fs.createWriteStream(distFile);
+
+    //  при изменении массива с filtred на sorted, мы добавим все цсс файлы с папки, но они будут в "разнобой"
     filtred.forEach(element => {
       const readStream = fs.createReadStream(
         path.join(__dirname, 'styles', element),
@@ -76,48 +80,49 @@ async function copyAsset(src, dest) {
   }
 }
 
-/* function сcopyAssets(pathToFiles) {
-  fs.readdir(pathToFiles, (err, arrFiles) => {
-    if (err) console.log('Ошибка чтения папки (3)');
+// Функция создание единого index.html файла в 'project-dist'
+function createMainIndex() {
+  fs.readFile(
+    path.join(__dirname, 'template.html'),
+    'utf-8',
+    (err, templateHTML) => {
+      if (err) console.log('Ошибка чтения файла (4)');
+      // console.log(templateHTML);
+      let reg = /{{.+}}/gm;
 
-    console.log(arrFiles);
-    for (const file of arrFiles) {
-      fs.stat(path.join(__dirname, 'assets', file), (err, data) => {
-        //   path.basename(data);
-        if (err) console.log('stats');
-        //   console.log(data.isDirectory());
-        if (data.isDirectory()) {
-          //  console.log(file);
-          //  todo неправильный аргумент!
-          //  сcopyAssets(file);
-        } else {
-          console.log('file copied');
-          //  fs.copyFile(
-          //    path.join(__dirname, 'assets', file),
-          //    path.join(__dirname, 'project-dist', 'assets', file),
-          //    err => {
-          //      if (err) {
-          //        console.log('Ошибка копирования файлов');
-          //      }
-          //    }
-          //  );
-        }
-        //   let size = +data.size / 1000;
-        //   console.log('размер', `${size}kB`);
+      let tags = templateHTML.match(reg);
+
+      // console.log(tags); //[ '{{header}}', '{{articles}}', '{{footer}}' ]
+
+      tags.forEach(tag => {
+        let tagToStr = tag.split('').slice(2, tag.length - 2);
+        tagToStr.push('.html');
+        tagToStr = tagToStr.join('');
+
+        //   console.log(tagToStr); //header.html	 articles.html	 footer.html
+
+        fs.readFile(
+          path.join(__dirname, 'components', tagToStr),
+          'utf-8',
+          (err, data) => {
+            if (err)
+              console.error(
+                'ошибка при чтении файлов .html с папки components'
+              );
+            templateHTML = templateHTML.replace(tag, data);
+
+            fs.writeFile(
+              path.join(__dirname, 'project-dist', 'index.html'),
+              templateHTML,
+              err => {
+                if (err) console.error('ошибка при записи index.html');
+              }
+            );
+          }
+        );
       });
-    }
 
-    //  for (const file of arrFiles) {
-    //    fs.copyFile(
-    //      path.join(__dirname, 'assets', file),
-    //      path.join(__dirname, 'project-dist', 'assets', file),
-    //      err => {
-    //        if (err) {
-    //          console.log('Ошибка копирования файлов');
-    //        }
-    //      }
-    //    );
-    //  }
-    //  console.log('folder was copied');
-  });
-} */
+      console.log('Index.html updated');
+    }
+  );
+}
