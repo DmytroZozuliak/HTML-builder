@@ -7,6 +7,9 @@ const FSP = require('fs').promises;
 const assets = path.join(__dirname, 'assets');
 const copyAssets = path.join(__dirname, 'project-dist', 'assets');
 
+// todo not mine 1 const
+const distComponents = path.join(__dirname, 'components');
+
 // создаем папку 'project-dist' и вкладываем в нее функции создания Цсс
 fs.mkdir(path.join(__dirname, 'project-dist'), { recursive: true }, err => {
   if (err) console.log('Ошибка в создании папки');
@@ -23,7 +26,8 @@ fs.access(copyAssets, err => {
     console.log('updating folder...');
 
     //  Перед копирыванием удаляем все содержимое папок и файлов, затем заново копируем
-    fs.rmdir(
+    //  fs.rmdir(
+    fs.rm(
       path.join(copyAssets),
       {
         recursive: true,
@@ -81,6 +85,8 @@ async function copyAsset(src, dest) {
 }
 
 // Функция создание единого index.html файла в 'project-dist'
+// Вариант 1 с перебором {{component}}
+/*
 function createMainIndex() {
   fs.readFile(
     path.join(__dirname, 'template.html'),
@@ -135,6 +141,49 @@ function createMainIndex() {
       });
 
       console.log('Index.html updated');
+    }
+  );
+}
+*/
+// Функция создание единого index.html файла в 'project-dist' переделанная
+// Вариант 2 с перебором ./component/*.html но тут если будут 2 {{component}}, то заменит только 1-й
+
+function createMainIndex() {
+  fs.readFile(
+    path.join(__dirname, 'template.html'),
+    'utf8',
+    (err, templateHTML) => {
+      if (err) console.log('Ошибка чтения файла (4)');
+
+      fs.readdir(distComponents, (err, components) => {
+        if (err) console.log('Ошибка чтения файла (5)');
+
+        components.forEach(file => {
+          const fileName = path.parse(file).name;
+          //  console.log(fileName);
+          let reg = `{{${fileName}}}`;
+
+          if (templateHTML.includes(reg)) {
+            fs.readFile(
+              path.join(distComponents, file),
+              'utf8',
+              (err, data) => {
+                if (err) {
+                  console.error(
+                    'ошибка при чтении файлов .html с папки components'
+                  );
+                }
+
+                templateHTML = templateHTML.replaceAll(reg, data);
+                fs.writeFile(distIndexFile, templateHTML, err => {
+                  if (err) console.error('ошибка при записи index.html');
+                });
+              }
+            );
+          }
+        });
+        console.log('Index.html updated');
+      });
     }
   );
 }
