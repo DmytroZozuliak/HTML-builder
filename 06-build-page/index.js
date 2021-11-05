@@ -86,7 +86,7 @@ async function copyAsset(src, dest) {
 
 // Функция создание единого index.html файла в 'project-dist'
 // Вариант 1 с перебором {{component}}
-/*
+
 function createMainIndex() {
   fs.readFile(
     path.join(__dirname, 'template.html'),
@@ -144,10 +144,10 @@ function createMainIndex() {
     }
   );
 }
-*/
-// Функция создание единого index.html файла в 'project-dist' переделанная
-// Вариант 2 с перебором ./component/*.html но тут если будут 2 {{component}}, то заменит только 1-й
 
+// Функция создание единого index.html файла в 'project-dist' переделанная
+// Вариант 2 с перебором ./component/*.html но тут если будут 2 {{component}}, то заменит только 1-й, добавил реплейсОлл
+/*
 function createMainIndex() {
   fs.readFile(
     path.join(__dirname, 'template.html'),
@@ -187,3 +187,4 @@ function createMainIndex() {
     }
   );
 }
+*/
